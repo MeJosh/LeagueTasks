@@ -94,7 +94,7 @@ const tasksStore = useTasksStore()
 const isDark = computed(() => theme.global.current.value.dark)
 
 function toggleTheme() {
-  theme.global.name.value = isDark.value ? 'light' : 'dark'
+  theme.change(isDark.value ? 'light' : 'dark')
 }
 
 onMounted(() => {
