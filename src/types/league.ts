@@ -101,12 +101,12 @@ export const LeagueTaskSchema = z.object({
   /** Numeric tier (1–5, or 1–6 for League 3 which has Beginner). */
   tier: z.number().int().min(1).max(6),
   tierName: TierNameSchema,
-  /** Completion % across all players. Null for very old leagues. */
-  completionPercent: z.number().min(0).max(100).nullable(),
-  /** Specific skill level requirements. */
-  skills: z.array(SkillRequirementSchema).nullable(),
-  /** Free-form notes pulled from the OSRS wiki. */
-  wikiNotes: z.string().nullable(),
+  /** Completion % across all players. Absent or null for older leagues. */
+  completionPercent: z.number().min(0).max(100).nullish(),
+  /** Specific skill level requirements. Absent when no requirements exist. */
+  skills: z.array(SkillRequirementSchema).nullish(),
+  /** Free-form notes pulled from the OSRS wiki. Absent when not scraped. */
+  wikiNotes: z.string().nullish(),
 })
 export type LeagueTask = z.infer<typeof LeagueTaskSchema>
 
