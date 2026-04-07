@@ -47,10 +47,23 @@
           clearable
           class="mb-3"
         />
-        <div class="d-flex flex-wrap gap-3">
+        <div class="d-flex flex-column gap-1">
+          <!-- Tier -->
           <div>
-            <div class="text-caption text-medium-emphasis mb-1">Tier</div>
-            <v-chip-group v-model="selectedTiers" multiple>
+            <div
+              class="d-flex align-center gap-1 py-1 cursor-pointer"
+              style="user-select: none; justify-content: center; width: 100%"
+              @click="tierExpanded = !tierExpanded"
+            >
+              <span class="text-caption text-medium-emphasis font-weight-medium">Tier</span>
+              <v-icon size="x-small" class="text-medium-emphasis">
+                {{ tierExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+              </v-icon>
+              <span v-if="selectedTiers.length && !tierExpanded" class="text-caption text-medium-emphasis">
+                ({{ selectedTiers.length }} selected)
+              </span>
+            </div>
+            <v-chip-group v-show="tierExpanded" v-model="selectedTiers" multiple column class="px-8">
               <v-chip
                 v-for="tier in availableTiers"
                 :key="tier"
@@ -74,27 +87,72 @@
             </v-chip-group>
           </div>
 
-          <v-select
-            v-model="selectedArea"
-            :items="availableAreas"
-            label="Area"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
-            style="max-width: 200px"
-          />
+          <!-- Area -->
+          <div>
+            <div
+              class="d-flex align-center gap-1 py-1 cursor-pointer"
+              style="user-select: none; justify-content: center; width: 100%"
+              @click="areaExpanded = !areaExpanded"
+            >
+              <span class="text-caption text-medium-emphasis font-weight-medium">Area</span>
+              <v-icon size="x-small" class="text-medium-emphasis">
+                {{ areaExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+              </v-icon>
+              <span v-if="selectedAreas.length && !areaExpanded" class="text-caption text-medium-emphasis">
+                ({{ selectedAreas.length }} selected)
+              </span>
+            </div>
+            <v-chip-group v-show="areaExpanded" v-model="selectedAreas" multiple column class="px-8">
+              <v-chip
+                v-for="area in availableAreas"
+                :key="area"
+                :value="area"
+                filter
+                size="small"
+                variant="tonal"
+              >
+                <img
+                  v-if="AREA_BADGE_URLS[area]"
+                  :src="AREA_BADGE_URLS[area]"
+                  :alt="area"
+                  :width="area === 'Global' ? 12 : 14"
+                  height="14"
+                  class="mr-1"
+                  style="object-fit: contain"
+                />
+                {{ area }}
+              </v-chip>
+            </v-chip-group>
+          </div>
 
-          <v-select
-            v-model="selectedCategory"
-            :items="availableCategories"
-            label="Category"
-            variant="outlined"
-            density="compact"
-            hide-details
-            clearable
-            style="max-width: 180px"
-          />
+          <!-- Category -->
+          <div>
+            <div
+              class="d-flex align-center gap-1 py-1 cursor-pointer"
+              style="user-select: none; justify-content: center; width: 100%"
+              @click="categoryExpanded = !categoryExpanded"
+            >
+              <span class="text-caption text-medium-emphasis font-weight-medium">Category</span>
+              <v-icon size="x-small" class="text-medium-emphasis">
+                {{ categoryExpanded ? 'mdi-chevron-up' : 'mdi-chevron-down' }}
+              </v-icon>
+              <span v-if="selectedCategories.length && !categoryExpanded" class="text-caption text-medium-emphasis">
+                ({{ selectedCategories.length }} selected)
+              </span>
+            </div>
+            <v-chip-group v-show="categoryExpanded" v-model="selectedCategories" multiple column class="px-8">
+              <v-chip
+                v-for="cat in availableCategories"
+                :key="cat"
+                :value="cat"
+                filter
+                size="small"
+                variant="tonal"
+              >
+                {{ cat }}
+              </v-chip>
+            </v-chip-group>
+          </div>
         </div>
       </v-card>
 
@@ -106,6 +164,7 @@
           :items-per-page="25"
           :items-per-page-options="[25, 50, 100]"
           :cell-props="cellProps"
+          :custom-key-sort="customKeySort"
           density="comfortable"
           hover
           style="min-width: 700px"
@@ -145,7 +204,7 @@
                 :key="req.skill"
                 size="x-small"
                 variant="tonal"
-                color="teal"
+                :style="{ color: isDark ? '#80cbc4' : '#00695c' }"
               >
                 <img
                   :src="SKILL_ICON_URLS[req.skill as OsrsSkill]"
@@ -203,9 +262,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useTheme } from 'vuetify'
 import { useTasksStore } from '../stores/tasks'
 import type { TierName, OsrsSkill } from '../types/league'
 import { AREA_BADGE_URLS, SKILL_ICON_URLS, TIER_CONFIG } from '../data/wikiImages'
+
+const theme = useTheme()
+const isDark = computed(() => theme.global.current.value.dark)
 
 const tasksStore = useTasksStore()
 
@@ -214,17 +277,24 @@ const tasksStore = useTasksStore()
 // ---------------------------------------------------------------------------
 const search = ref('')
 const selectedTiers = ref<string[]>([])
-const selectedArea = ref<string | null>(null)
-const selectedCategory = ref<string | null>(null)
+const selectedAreas = ref<string[]>([])
+const selectedCategories = ref<string[]>([])
+
+const tierExpanded = ref(true)
+const areaExpanded = ref(false)
+const categoryExpanded = ref(false)
 
 // Ordered by difficulty — filter chips maintain this order
 const availableTiers = [
   'Easy', 'Medium', 'Hard', 'Elite', 'Master',
 ] as const satisfies readonly TierName[]
 
-const availableAreas = computed(() =>
-  [...new Set(tasksStore.tasks.map(t => t.area).filter(Boolean) as string[])].sort(),
-)
+const availableAreas = computed(() => {
+  const areas = [...new Set(tasksStore.tasks.map(t => t.area).filter(Boolean) as string[])].sort()
+  const i = areas.indexOf('Global')
+  if (i > -1) { areas.splice(i, 1); areas.unshift('Global') }
+  return areas
+})
 
 const availableCategories = computed(() =>
   [...new Set(tasksStore.tasks.map(t => t.category).filter(Boolean) as string[])].sort(),
@@ -236,11 +306,11 @@ const filteredTasks = computed(() => {
   if (selectedTiers.value.length) {
     result = result.filter(t => selectedTiers.value.includes(t.tierName))
   }
-  if (selectedArea.value) {
-    result = result.filter(t => t.area === selectedArea.value)
+  if (selectedAreas.value.length) {
+    result = result.filter(t => t.area != null && selectedAreas.value.includes(t.area))
   }
-  if (selectedCategory.value) {
-    result = result.filter(t => t.category === selectedCategory.value)
+  if (selectedCategories.value.length) {
+    result = result.filter(t => t.category != null && selectedCategories.value.includes(t.category))
   }
   if (search.value.trim()) {
     const q = search.value.trim().toLowerCase()
@@ -266,6 +336,15 @@ const headers = [
   { title: 'Comp%',       key: 'completionPercent', sortable: true,  width: '80px' },
 ]
 
+// Global sorts before all other areas
+const customKeySort = {
+  area: (a: string | null, b: string | null) => {
+    if (a === 'Global') return -1
+    if (b === 'Global') return 1
+    return (a ?? '').localeCompare(b ?? '')
+  },
+}
+
 // Color the entire Comp% cell via cellProps
 function cellProps({ column, item }: { column: { key: string }; item: Record<string, unknown> }) {
   if (column.key !== 'completionPercent') return {}
@@ -279,3 +358,9 @@ function cellProps({ column, item }: { column: { key: string }; item: Record<str
 }
 
 </script>
+
+<style scoped>
+:deep(.v-chip-group .v-slide-group__content) {
+  justify-content: center;
+}
+</style>
