@@ -30,6 +30,16 @@
           @click="drawer = !drawer"
         />
       </template>
+
+      <!-- Loading bar at bottom of app bar -->
+      <template #extension>
+        <v-progress-linear
+          v-if="tasksStore.loading"
+          indeterminate
+          color="primary"
+          height="2"
+        />
+      </template>
     </v-app-bar>
 
     <!-- Mobile navigation drawer -->
@@ -73,15 +83,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useTheme } from 'vuetify'
+import { useTasksStore } from './stores/tasks'
 
 const theme = useTheme()
 const drawer = ref(false)
+const tasksStore = useTasksStore()
 
 const isDark = computed(() => theme.global.current.value.dark)
 
 function toggleTheme() {
   theme.global.name.value = isDark.value ? 'light' : 'dark'
 }
+
+onMounted(() => {
+  tasksStore.loadLeague()
+})
 </script>
