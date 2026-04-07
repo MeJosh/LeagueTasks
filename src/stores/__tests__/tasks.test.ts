@@ -144,19 +144,19 @@ describe('toggleComplete', () => {
 // Derived: totalPoints
 // ---------------------------------------------------------------------------
 describe('totalPoints', () => {
-  it('sums tier * 10 for completed tasks', () => {
+  it('sums TIER_CONFIG points for completed tasks', () => {
     const store = useTasksStore()
-    const easy = makeTask({ structId: 1, tier: 1 })   // 10pts
-    const hard = makeTask({ structId: 2, tier: 3 })   // 30pts
-    const master = makeTask({ structId: 3, tier: 5 }) // 50pts
+    const easy   = makeTask({ structId: 1, tier: 1, tierName: 'Easy'   }) // 10pts
+    const hard   = makeTask({ structId: 2, tier: 3, tierName: 'Hard'   }) // 80pts
+    const master = makeTask({ structId: 3, tier: 5, tierName: 'Master' }) // 400pts
     store.tasks = [easy, hard, master]
 
     store.toggleComplete(easy)
     store.toggleComplete(hard)
-    expect(store.totalPoints).toBe(40)
+    expect(store.totalPoints).toBe(90)
 
     store.toggleComplete(master)
-    expect(store.totalPoints).toBe(90)
+    expect(store.totalPoints).toBe(490)
   })
 
   it('is 0 when nothing is completed', () => {

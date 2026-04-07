@@ -1,6 +1,20 @@
-import type { OsrsSkill } from '../types/league'
+import type { OsrsSkill, TierName } from '../types/league'
 
 const BASE = 'https://oldschool.runescape.wiki/images'
+
+// ---------------------------------------------------------------------------
+// Tier icons + point values
+// Beginner uses the scroll box icon; Easy–Master use the Trailblazer icons.
+// ---------------------------------------------------------------------------
+export const TIER_CONFIG: Partial<Record<TierName, { icon: string; points: number; color: string }>> = {
+  // Beginner only appears in League 3
+  Beginner: { icon: `${BASE}/Scroll_box_(beginner).png`,                         points: 10,  color: 'grey'        },
+  Easy:     { icon: `${BASE}/Trailblazer_Reloaded_League_tasks_-_Easy.png`,      points: 10,  color: 'success'     },
+  Medium:   { icon: `${BASE}/Trailblazer_Reloaded_League_tasks_-_Medium.png`,    points: 30,  color: 'info'        },
+  Hard:     { icon: `${BASE}/Trailblazer_Reloaded_League_tasks_-_Hard.png`,      points: 80,  color: 'warning'     },
+  Elite:    { icon: `${BASE}/Trailblazer_Reloaded_League_tasks_-_Elite.png`,     points: 200, color: 'error'       },
+  Master:   { icon: `${BASE}/Trailblazer_Reloaded_League_tasks_-_Master.png`,    points: 400, color: 'deep-purple' },
+}
 
 // ---------------------------------------------------------------------------
 // Area badge images (the shield/crest PNGs from the wiki)

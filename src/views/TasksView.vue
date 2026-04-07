@@ -1,5 +1,5 @@
 <template>
-  <v-container class="py-6">
+  <v-container fluid class="py-6 px-4 px-md-8">
 
     <!-- Header -->
     <div class="d-flex align-center justify-space-between flex-wrap gap-2 mb-4">
@@ -53,14 +53,23 @@
             <v-chip-group v-model="selectedTiers" multiple>
               <v-chip
                 v-for="tier in availableTiers"
-                :key="tier.name"
-                :value="tier.name"
-                :color="tier.color"
+                :key="tier"
+                :value="tier"
+                :color="TIER_CONFIG[tier]?.color"
                 filter
                 size="small"
                 variant="tonal"
               >
-                {{ tier.name }}
+                <img
+                  v-if="TIER_CONFIG[tier]"
+                  :src="TIER_CONFIG[tier]!.icon"
+                  :alt="tier"
+                  width="12"
+                  height="14"
+                  class="mr-1"
+                  style="object-fit: contain"
+                />
+                {{ tier }}
               </v-chip>
             </v-chip-group>
           </div>
@@ -108,7 +117,7 @@
                 :src="AREA_BADGE_URLS[item.area]"
                 :alt="item.area"
                 :title="item.area"
-                height="28"
+                :height="item.area === 'Global' ? 22 : 28"
                 style="object-fit: contain"
               />
             </div>
@@ -152,11 +161,22 @@
             <span v-else class="text-caption text-disabled">—</span>
           </template>
 
-          <!-- Tier chip -->
-          <template #item.tierName="{ item }">
-            <v-chip :color="tierColor(item.tierName)" size="small" variant="tonal">
-              {{ item.tierName }}
-            </v-chip>
+          <!-- Tier: wiki icon + point value -->
+          <template #item.tier="{ item }">
+            <div v-if="TIER_CONFIG[item.tierName as TierName]" class="d-flex align-center gap-1">
+              <img
+                :src="TIER_CONFIG[item.tierName as TierName]!.icon"
+                :alt="item.tierName"
+                :title="item.tierName"
+                width="16"
+                height="18"
+                style="object-fit: contain"
+              />
+              <span class="text-body-2 font-weight-medium">
+                {{ TIER_CONFIG[item.tierName as TierName]!.points }}
+              </span>
+            </div>
+            <span v-else class="text-caption text-disabled">{{ item.tierName }}</span>
           </template>
 
           <!-- Comp% — styling applied via cellProps; just render the text here -->
@@ -185,7 +205,7 @@
 import { ref, computed } from 'vue'
 import { useTasksStore } from '../stores/tasks'
 import type { TierName, OsrsSkill } from '../types/league'
-import { AREA_BADGE_URLS, SKILL_ICON_URLS } from '../data/wikiImages'
+import { AREA_BADGE_URLS, SKILL_ICON_URLS, TIER_CONFIG } from '../data/wikiImages'
 
 const tasksStore = useTasksStore()
 
@@ -197,14 +217,10 @@ const selectedTiers = ref<string[]>([])
 const selectedArea = ref<string | null>(null)
 const selectedCategory = ref<string | null>(null)
 
+// Ordered by difficulty — filter chips maintain this order
 const availableTiers = [
-  { name: 'Beginner', color: 'grey' },
-  { name: 'Easy',     color: 'success' },
-  { name: 'Medium',   color: 'info' },
-  { name: 'Hard',     color: 'warning' },
-  { name: 'Elite',    color: 'error' },
-  { name: 'Master',   color: 'deep-purple' },
-] as const
+  'Easy', 'Medium', 'Hard', 'Elite', 'Master',
+] as const satisfies readonly TierName[]
 
 const availableAreas = computed(() =>
   [...new Set(tasksStore.tasks.map(t => t.area).filter(Boolean) as string[])].sort(),
@@ -243,11 +259,11 @@ const filteredTasks = computed(() => {
 // Table config
 // ---------------------------------------------------------------------------
 const headers = [
-  { title: 'Area',        key: 'area',              sortable: true,  width: '140px' },
+  { title: 'Area',        key: 'area',              sortable: true,  width: '40px' },
   { title: 'Name',        key: 'name',              sortable: true               },
   { title: 'Requirements',key: 'skills',            sortable: false              },
-  { title: 'Tier',        key: 'tierName',          sortable: true,  width: '100px' },
-  { title: 'Comp%',       key: 'completionPercent', sortable: true,  width: '80px'  },
+  { title: 'Pts',         key: 'tier',              sortable: true,  width: '70px' },
+  { title: 'Comp%',       key: 'completionPercent', sortable: true,  width: '80px' },
 ]
 
 // Color the entire Comp% cell via cellProps
@@ -262,18 +278,4 @@ function cellProps({ column, item }: { column: { key: string }; item: Record<str
   return { style: { backgroundColor: bg, textAlign: 'center' as const } }
 }
 
-// ---------------------------------------------------------------------------
-// Tier colors
-// ---------------------------------------------------------------------------
-function tierColor(name: TierName | string): string {
-  const map: Record<string, string> = {
-    Beginner:    'grey',
-    Easy:        'success',
-    Medium:      'info',
-    Hard:        'warning',
-    Elite:       'error',
-    Master:      'deep-purple',
-  }
-  return map[name] ?? 'default'
-}
 </script>

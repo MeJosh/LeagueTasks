@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { type LeagueTask, type LeagueConfig, LeagueDataSchema } from '../types/league'
 import { LEAGUES, DEFAULT_LEAGUE } from '../data/leagues'
+import { TIER_CONFIG } from '../data/wikiImages'
 
 export { LEAGUES }
 
@@ -34,7 +35,7 @@ export const useTasksStore = defineStore('tasks', () => {
   )
 
   const totalPoints = computed(() =>
-    completedTasks.value.reduce((sum, t) => sum + t.tier * 10, 0),
+    completedTasks.value.reduce((sum, t) => sum + (TIER_CONFIG[t.tierName]?.points ?? 0), 0),
   )
 
   // ---------------------------------------------------------------------------
