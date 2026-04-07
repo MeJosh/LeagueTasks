@@ -4,7 +4,16 @@
       "Bash(bun install:*)",
       "Bash(bun add:*)",
       "Bash(bun run:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/syrifgit/full-task-scraper/refs/heads/main/generated/league-1-twisted/LEAGUE1.full.json\" -o league1.json)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/syrifgit/full-task-scraper/refs/heads/main/generated/league-2-trailblazer/LEAGUE2.full.json\" -o league2.json)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/syrifgit/full-task-scraper/refs/heads/main/generated/league-3-shattered-relics/LEAGUE3.full.json\" -o league3.json)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/syrifgit/full-task-scraper/refs/heads/main/generated/league-4-trailblazer-reloaded/LEAGUE4.full.json\" -o league4.json)",
+      "Bash(curl -sL \"https://raw.githubusercontent.com/syrifgit/full-task-scraper/refs/heads/main/generated/league-5-raging-echoes/LEAGUE_5.full.json\" -o league5.json)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\) if isinstance\\(d,dict\\) else f''''Array of {len\\(d\\)} items''''\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); items=d if isinstance\\(d,list\\) else d[list\\(d.keys\\(\\)\\)[0]]; print\\(json.dumps\\(items[0], indent=2\\)\\)\")",
+      "Bash(python3 -c \":*)"
     ]
   }
 }
