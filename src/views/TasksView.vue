@@ -103,16 +103,15 @@
         >
           <!-- Area -->
           <template #item.area="{ item }">
-            <v-chip
-              v-if="item.area"
-              :color="areaColor(item.area)"
-              size="x-small"
-              variant="tonal"
-              :prepend-icon="areaIcon(item.area)"
-              class="text-no-wrap"
-            >
-              {{ item.area }}
-            </v-chip>
+            <div v-if="item.area" class="d-flex justify-center">
+              <img
+                :src="AREA_BADGE_URLS[item.area]"
+                :alt="item.area"
+                :title="item.area"
+                height="28"
+                style="object-fit: contain"
+              />
+            </div>
             <span v-else class="text-disabled">—</span>
           </template>
 
@@ -138,8 +137,15 @@
                 size="x-small"
                 variant="tonal"
                 color="teal"
-                :prepend-icon="skillIcon(req.skill)"
               >
+                <img
+                  :src="SKILL_ICON_URLS[req.skill as OsrsSkill]"
+                  :alt="req.skill"
+                  width="13"
+                  height="13"
+                  class="mr-1"
+                  style="object-fit: contain"
+                />
                 {{ req.level }} {{ req.skill.charAt(0) + req.skill.slice(1).toLowerCase() }}
               </v-chip>
             </div>
@@ -179,6 +185,7 @@
 import { ref, computed } from 'vue'
 import { useTasksStore } from '../stores/tasks'
 import type { TierName, OsrsSkill } from '../types/league'
+import { AREA_BADGE_URLS, SKILL_ICON_URLS } from '../data/wikiImages'
 
 const tasksStore = useTasksStore()
 
@@ -253,64 +260,6 @@ function cellProps({ column, item }: { column: { key: string }; item: Record<str
     pct >= 30 ? 'rgba(230, 168, 23, 0.25)' :
                 'rgba(207, 102, 121, 0.25)'
   return { style: { backgroundColor: bg, textAlign: 'center' as const } }
-}
-
-// ---------------------------------------------------------------------------
-// Area config
-// ---------------------------------------------------------------------------
-const AREA_CONFIG: Record<string, { color: string; icon: string }> = {
-  'Global':               { color: 'grey',        icon: 'mdi-earth'          },
-  'Misthalin':            { color: 'red',          icon: 'mdi-shield'         },
-  'Asgarnia':             { color: 'blue',         icon: 'mdi-shield'         },
-  'Karamja':              { color: 'green',        icon: 'mdi-shield'         },
-  'Kandarin':             { color: 'amber',        icon: 'mdi-shield'         },
-  'Morytania':            { color: 'deep-purple',  icon: 'mdi-shield'         },
-  'Wilderness':           { color: 'grey-darken-1',icon: 'mdi-skull'          },
-  'Kourend & Kebos':      { color: 'blue-grey',    icon: 'mdi-shield'         },
-  'Fremennik Province':   { color: 'indigo',       icon: 'mdi-shield'         },
-  'Kharidian Desert':     { color: 'orange',       icon: 'mdi-shield'         },
-  'Tirannwn':             { color: 'teal',         icon: 'mdi-shield'         },
-  'Varlamore':            { color: 'purple',       icon: 'mdi-shield'         },
-}
-
-function areaColor(area: string): string {
-  return AREA_CONFIG[area]?.color ?? 'grey'
-}
-function areaIcon(area: string): string {
-  return AREA_CONFIG[area]?.icon ?? 'mdi-map-marker'
-}
-
-// ---------------------------------------------------------------------------
-// Skill icons
-// ---------------------------------------------------------------------------
-const SKILL_ICONS: Record<OsrsSkill, string> = {
-  AGILITY:      'mdi-run-fast',
-  ATTACK:       'mdi-sword',
-  CONSTRUCTION: 'mdi-hammer',
-  COOKING:      'mdi-pot-steam',
-  CRAFTING:     'mdi-scissors-cutting',
-  DEFENCE:      'mdi-shield-outline',
-  FARMING:      'mdi-sprout',
-  FIREMAKING:   'mdi-fire',
-  FISHING:      'mdi-fish',
-  FLETCHING:    'mdi-bow-arrow',
-  HERBLORE:     'mdi-leaf',
-  HITPOINTS:    'mdi-heart',
-  HUNTER:       'mdi-paw',
-  MAGIC:        'mdi-auto-fix',
-  MINING:       'mdi-pickaxe',
-  PRAYER:       'mdi-hands-pray',
-  RANGED:       'mdi-bow-arrow',
-  RUNECRAFT:    'mdi-infinity',
-  SLAYER:       'mdi-skull-outline',
-  SMITHING:     'mdi-anvil',
-  STRENGTH:     'mdi-arm-flex',
-  THIEVING:     'mdi-bag-personal',
-  WOODCUTTING:  'mdi-axe',
-}
-
-function skillIcon(skill: string): string {
-  return SKILL_ICONS[skill as OsrsSkill] ?? 'mdi-star'
 }
 
 // ---------------------------------------------------------------------------
