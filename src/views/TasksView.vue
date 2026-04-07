@@ -48,7 +48,6 @@
           class="mb-3"
         />
         <div class="d-flex flex-wrap gap-3">
-          <!-- Tier filter -->
           <div>
             <div class="text-caption text-medium-emphasis mb-1">Tier</div>
             <v-chip-group v-model="selectedTiers" multiple>
@@ -66,7 +65,6 @@
             </v-chip-group>
           </div>
 
-          <!-- Area filter -->
           <v-select
             v-model="selectedArea"
             :items="availableAreas"
@@ -78,7 +76,6 @@
             style="max-width: 200px"
           />
 
-          <!-- Category filter -->
           <v-select
             v-model="selectedCategory"
             :items="availableCategories"
@@ -92,56 +89,82 @@
         </div>
       </v-card>
 
-      <!-- Task table -->
-      <v-data-table
-        :headers="headers"
-        :items="filteredTasks"
-        :items-per-page="25"
-        :items-per-page-options="[25, 50, 100]"
-        density="comfortable"
-        hover
-      >
-        <!-- Tier chip -->
-        <template #item.tierName="{ item }">
-          <v-chip
-            :color="tierColor(item.tierName)"
-            size="small"
-            variant="tonal"
-          >
-            {{ item.tierName }}
-          </v-chip>
-        </template>
+      <!-- Task table — horizontally scrollable on small screens -->
+      <div style="overflow-x: auto">
+        <v-data-table
+          :headers="headers"
+          :items="filteredTasks"
+          :items-per-page="25"
+          :items-per-page-options="[25, 50, 100]"
+          :cell-props="cellProps"
+          density="comfortable"
+          hover
+          style="min-width: 700px"
+        >
+          <!-- Area -->
+          <template #item.area="{ item }">
+            <v-chip
+              v-if="item.area"
+              :color="areaColor(item.area)"
+              size="x-small"
+              variant="tonal"
+              :prepend-icon="areaIcon(item.area)"
+              class="text-no-wrap"
+            >
+              {{ item.area }}
+            </v-chip>
+            <span v-else class="text-disabled">—</span>
+          </template>
 
-        <!-- Area -->
-        <template #item.area="{ item }">
-          <span class="text-body-2">{{ item.area ?? '—' }}</span>
-        </template>
+          <!-- Name + description in one cell -->
+          <template #item.name="{ item }">
+            <div class="py-1">
+              <div class="font-weight-medium">{{ item.name }}</div>
+              <div
+                v-if="item.description && item.description !== item.name"
+                class="text-caption text-medium-emphasis mt-0.5"
+              >
+                {{ item.description }}
+              </div>
+            </div>
+          </template>
 
-        <!-- Category -->
-        <template #item.category="{ item }">
-          <span class="text-body-2">{{ item.category ?? '—' }}</span>
-        </template>
+          <!-- Skill requirements -->
+          <template #item.skills="{ item }">
+            <div v-if="item.skills?.length" class="d-flex flex-wrap gap-1 py-1">
+              <v-chip
+                v-for="req in item.skills"
+                :key="req.skill"
+                size="x-small"
+                variant="tonal"
+                color="teal"
+                :prepend-icon="skillIcon(req.skill)"
+              >
+                {{ req.level }} {{ req.skill.charAt(0) + req.skill.slice(1).toLowerCase() }}
+              </v-chip>
+            </div>
+            <span v-else class="text-caption text-disabled">—</span>
+          </template>
 
-        <!-- Completion % -->
-        <template #item.completionPercent="{ item }">
-          <div v-if="item.completionPercent != null" class="d-flex align-center gap-2" style="min-width: 80px">
-            <v-progress-linear
-              :model-value="item.completionPercent"
-              :color="completionColor(item.completionPercent)"
-              rounded
-              height="6"
-              class="flex-grow-1"
-            />
-            <span class="text-caption text-medium-emphasis" style="min-width: 36px; text-align: right">
+          <!-- Tier chip -->
+          <template #item.tierName="{ item }">
+            <v-chip :color="tierColor(item.tierName)" size="small" variant="tonal">
+              {{ item.tierName }}
+            </v-chip>
+          </template>
+
+          <!-- Comp% — styling applied via cellProps; just render the text here -->
+          <template #item.completionPercent="{ item }">
+            <span v-if="item.completionPercent != null" class="font-weight-bold">
               {{ item.completionPercent.toFixed(1) }}%
             </span>
-          </div>
-          <span v-else class="text-caption text-disabled">—</span>
-        </template>
-      </v-data-table>
+            <span v-else class="text-disabled">—</span>
+          </template>
+        </v-data-table>
+      </div>
     </template>
 
-    <!-- Empty (no tasks loaded yet, no error) -->
+    <!-- Empty -->
     <template v-else>
       <v-card class="pa-8 text-center" variant="outlined">
         <v-icon size="64" color="medium-emphasis" class="mb-4">mdi-format-list-checks</v-icon>
@@ -155,7 +178,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { useTasksStore } from '../stores/tasks'
-import type { TierName } from '../types/league'
+import type { TierName, OsrsSkill } from '../types/league'
 
 const tasksStore = useTasksStore()
 
@@ -177,11 +200,11 @@ const availableTiers = [
 ] as const
 
 const availableAreas = computed(() =>
-  [...new Set(tasksStore.tasks.map(t => t.area).filter(Boolean) as string[])].sort()
+  [...new Set(tasksStore.tasks.map(t => t.area).filter(Boolean) as string[])].sort(),
 )
 
 const availableCategories = computed(() =>
-  [...new Set(tasksStore.tasks.map(t => t.category).filter(Boolean) as string[])].sort()
+  [...new Set(tasksStore.tasks.map(t => t.category).filter(Boolean) as string[])].sort(),
 )
 
 const filteredTasks = computed(() => {
@@ -213,31 +236,95 @@ const filteredTasks = computed(() => {
 // Table config
 // ---------------------------------------------------------------------------
 const headers = [
-  { title: 'Task',       key: 'name',              sortable: true  },
-  { title: 'Tier',       key: 'tierName',          sortable: true, width: '110px' },
-  { title: 'Area',       key: 'area',              sortable: true, width: '160px' },
-  { title: 'Category',   key: 'category',          sortable: true, width: '130px' },
-  { title: 'Completion', key: 'completionPercent', sortable: true, width: '160px' },
+  { title: 'Area',        key: 'area',              sortable: true,  width: '140px' },
+  { title: 'Name',        key: 'name',              sortable: true               },
+  { title: 'Requirements',key: 'skills',            sortable: false              },
+  { title: 'Tier',        key: 'tierName',          sortable: true,  width: '100px' },
+  { title: 'Comp%',       key: 'completionPercent', sortable: true,  width: '80px'  },
 ]
 
+// Color the entire Comp% cell via cellProps
+function cellProps({ column, item }: { column: { key: string }; item: Record<string, unknown> }) {
+  if (column.key !== 'completionPercent') return {}
+  const pct = item.completionPercent as number | null | undefined
+  if (pct == null) return {}
+  const bg =
+    pct >= 60 ? 'rgba(76, 175, 125, 0.25)' :
+    pct >= 30 ? 'rgba(230, 168, 23, 0.25)' :
+                'rgba(207, 102, 121, 0.25)'
+  return { style: { backgroundColor: bg, textAlign: 'center' as const } }
+}
+
 // ---------------------------------------------------------------------------
-// Helpers
+// Area config
+// ---------------------------------------------------------------------------
+const AREA_CONFIG: Record<string, { color: string; icon: string }> = {
+  'Global':               { color: 'grey',        icon: 'mdi-earth'          },
+  'Misthalin':            { color: 'red',          icon: 'mdi-shield'         },
+  'Asgarnia':             { color: 'blue',         icon: 'mdi-shield'         },
+  'Karamja':              { color: 'green',        icon: 'mdi-shield'         },
+  'Kandarin':             { color: 'amber',        icon: 'mdi-shield'         },
+  'Morytania':            { color: 'deep-purple',  icon: 'mdi-shield'         },
+  'Wilderness':           { color: 'grey-darken-1',icon: 'mdi-skull'          },
+  'Kourend & Kebos':      { color: 'blue-grey',    icon: 'mdi-shield'         },
+  'Fremennik Province':   { color: 'indigo',       icon: 'mdi-shield'         },
+  'Kharidian Desert':     { color: 'orange',       icon: 'mdi-shield'         },
+  'Tirannwn':             { color: 'teal',         icon: 'mdi-shield'         },
+  'Varlamore':            { color: 'purple',       icon: 'mdi-shield'         },
+}
+
+function areaColor(area: string): string {
+  return AREA_CONFIG[area]?.color ?? 'grey'
+}
+function areaIcon(area: string): string {
+  return AREA_CONFIG[area]?.icon ?? 'mdi-map-marker'
+}
+
+// ---------------------------------------------------------------------------
+// Skill icons
+// ---------------------------------------------------------------------------
+const SKILL_ICONS: Record<OsrsSkill, string> = {
+  AGILITY:      'mdi-run-fast',
+  ATTACK:       'mdi-sword',
+  CONSTRUCTION: 'mdi-hammer',
+  COOKING:      'mdi-pot-steam',
+  CRAFTING:     'mdi-scissors-cutting',
+  DEFENCE:      'mdi-shield-outline',
+  FARMING:      'mdi-sprout',
+  FIREMAKING:   'mdi-fire',
+  FISHING:      'mdi-fish',
+  FLETCHING:    'mdi-bow-arrow',
+  HERBLORE:     'mdi-leaf',
+  HITPOINTS:    'mdi-heart',
+  HUNTER:       'mdi-paw',
+  MAGIC:        'mdi-auto-fix',
+  MINING:       'mdi-pickaxe',
+  PRAYER:       'mdi-hands-pray',
+  RANGED:       'mdi-bow-arrow',
+  RUNECRAFT:    'mdi-infinity',
+  SLAYER:       'mdi-skull-outline',
+  SMITHING:     'mdi-anvil',
+  STRENGTH:     'mdi-arm-flex',
+  THIEVING:     'mdi-bag-personal',
+  WOODCUTTING:  'mdi-axe',
+}
+
+function skillIcon(skill: string): string {
+  return SKILL_ICONS[skill as OsrsSkill] ?? 'mdi-star'
+}
+
+// ---------------------------------------------------------------------------
+// Tier colors
 // ---------------------------------------------------------------------------
 function tierColor(name: TierName | string): string {
   const map: Record<string, string> = {
-    Beginner: 'grey',
-    Easy:     'success',
-    Medium:   'info',
-    Hard:     'warning',
-    Elite:    'error',
-    Master:   'deep-purple',
+    Beginner:    'grey',
+    Easy:        'success',
+    Medium:      'info',
+    Hard:        'warning',
+    Elite:       'error',
+    Master:      'deep-purple',
   }
   return map[name] ?? 'default'
-}
-
-function completionColor(pct: number): string {
-  if (pct >= 70) return 'success'
-  if (pct >= 40) return 'warning'
-  return 'error'
 }
 </script>
