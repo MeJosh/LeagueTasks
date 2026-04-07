@@ -157,7 +157,7 @@
       </v-card>
 
       <!-- Task table — horizontally scrollable on small screens -->
-      <div style="overflow-x: auto">
+      <div :style="mobile ? {} : { overflowX: 'auto' }">
         <v-data-table
           :headers="headers"
           :items="filteredTasks"
@@ -167,7 +167,7 @@
           :custom-key-sort="customKeySort"
           density="comfortable"
           hover
-          style="min-width: 700px"
+          :style="mobile ? {} : { minWidth: '700px' }"
         >
           <!-- Area -->
           <template #item.area="{ item }">
@@ -183,7 +183,7 @@
             <span v-else class="text-disabled">—</span>
           </template>
 
-          <!-- Name + description in one cell -->
+          <!-- Name + description in one cell; skills shown inline on mobile -->
           <template #item.name="{ item }">
             <div class="py-1">
               <div class="font-weight-medium">{{ item.name }}</div>
@@ -192,6 +192,25 @@
                 class="text-caption text-medium-emphasis mt-0.5"
               >
                 {{ item.description }}
+              </div>
+              <div v-if="mobile && item.skills?.length" class="d-flex flex-wrap gap-1 mt-1">
+                <v-chip
+                  v-for="req in item.skills"
+                  :key="req.skill"
+                  size="x-small"
+                  variant="tonal"
+                  :style="{ color: isDark ? '#80cbc4' : '#00695c' }"
+                >
+                  <img
+                    :src="SKILL_ICON_URLS[req.skill as OsrsSkill]"
+                    :alt="req.skill"
+                    width="13"
+                    height="13"
+                    class="mr-1"
+                    style="object-fit: contain"
+                  />
+                  {{ req.level }} {{ req.skill.charAt(0) + req.skill.slice(1).toLowerCase() }}
+                </v-chip>
               </div>
             </div>
           </template>
@@ -262,13 +281,14 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { useTheme } from 'vuetify'
+import { useTheme, useDisplay } from 'vuetify'
 import { useTasksStore } from '../stores/tasks'
 import type { TierName, OsrsSkill } from '../types/league'
 import { AREA_BADGE_URLS, SKILL_ICON_URLS, TIER_CONFIG } from '../data/wikiImages'
 
 const theme = useTheme()
 const isDark = computed(() => theme.global.current.value.dark)
+const { smAndDown: mobile } = useDisplay()
 
 const tasksStore = useTasksStore()
 
@@ -328,13 +348,13 @@ const filteredTasks = computed(() => {
 // ---------------------------------------------------------------------------
 // Table config
 // ---------------------------------------------------------------------------
-const headers = [
-  { title: 'Area',        key: 'area',              sortable: true,  width: '40px' },
-  { title: 'Name',        key: 'name',              sortable: true               },
-  { title: 'Requirements',key: 'skills',            sortable: false              },
-  { title: 'Pts',         key: 'tier',              sortable: true,  width: '70px' },
-  { title: 'Comp%',       key: 'completionPercent', sortable: true,  width: '80px' },
-]
+const headers = computed(() => [
+  { title: 'Area',         key: 'area',              sortable: true,  width: '40px' },
+  { title: 'Name',         key: 'name',              sortable: true               },
+  ...(!mobile.value ? [{ title: 'Requirements', key: 'skills', sortable: false }] : []),
+  { title: 'Pts',          key: 'tier',              sortable: true,  width: '70px' },
+  ...(!mobile.value ? [{ title: 'Comp%', key: 'completionPercent', sortable: true, width: '80px' }] : []),
+])
 
 // Global sorts before all other areas
 const customKeySort = {
