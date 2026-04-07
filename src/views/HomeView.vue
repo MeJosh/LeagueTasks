@@ -37,7 +37,7 @@
       </v-col>
     </v-row>
 
-    <v-card class="pa-4" rounded="lg" color="surface-variant">
+    <v-card class="pa-4" rounded="lg" variant="outlined">
       <div class="d-flex align-center gap-3 mb-3">
         <v-icon color="primary">mdi-account</v-icon>
         <span class="text-h6 font-weight-medium">Load Your Character</span>

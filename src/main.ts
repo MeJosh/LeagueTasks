@@ -18,11 +18,11 @@ const vuetify = createVuetify({
       dark: {
         dark: true,
         colors: {
-          primary: '#c8aa6e',      // OSRS gold
-          secondary: '#4a3728',    // Dark brown
-          background: '#1a1a2e',   // Dark navy
-          surface: '#16213e',      // Slightly lighter navy
-          'surface-variant': '#0f3460',
+          primary: '#d0d0d0',      // Silver
+          secondary: '#6b6b6b',    // Mid grey
+          background: '#121212',   // Near-black
+          surface: '#1e1e1e',      // Dark grey
+          'surface-variant': '#2c2c2c',
           error: '#cf6679',
           info: '#5b9bd5',
           success: '#4caf7d',
@@ -32,10 +32,10 @@ const vuetify = createVuetify({
       light: {
         dark: false,
         colors: {
-          primary: '#8b6914',
-          secondary: '#4a3728',
-          background: '#f5f0e8',
-          surface: '#fffdf7',
+          primary: '#4a4a4a',      // Dark grey
+          secondary: '#6b6b6b',
+          background: '#f2f2f2',
+          surface: '#ffffff',
           error: '#b00020',
           info: '#2196f3',
           success: '#4caf50',
