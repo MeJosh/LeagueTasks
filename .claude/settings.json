@@ -13,7 +13,8 @@
       "Bash(curl -sL \"https://raw.githubusercontent.com/syrifgit/full-task-scraper/refs/heads/main/generated/league-5-raging-echoes/LEAGUE_5.full.json\" -o league5.json)",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\) if isinstance\\(d,dict\\) else f''''Array of {len\\(d\\)} items''''\\)\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); items=d if isinstance\\(d,list\\) else d[list\\(d.keys\\(\\)\\)[0]]; print\\(json.dumps\\(items[0], indent=2\\)\\)\")",
-      "Bash(python3 -c \":*)"
+      "Bash(python3 -c \":*)",
+      "Bash(git commit -m \"test: add Vitest suite for schema validation and store logic:*)"
     ]
   }
 }
