@@ -1,0 +1,11 @@
+/* Tailwind v4 — skip preflight to avoid conflicts with Vuetify's CSS reset */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+/* Custom global styles */
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
